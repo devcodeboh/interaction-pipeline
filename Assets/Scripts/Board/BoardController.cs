@@ -29,7 +29,7 @@ public sealed class BoardController
     public void BuildBoard(Vector2Int gridSize)
     {
         ClearBoard();
-        gridSize = EnsureEvenGrid(gridSize);
+        gridSize = EnsurePlayableGrid(gridSize);
         ConfigureGrid(gridSize);
         inputController = new CardInputController(models, spawnedCards, bus);
         SpawnCards(gridSize);
@@ -113,21 +113,39 @@ public sealed class BoardController
         return sprites[pairId];
     }
 
-    private static Vector2Int EnsureEvenGrid(Vector2Int gridSize)
+    private Vector2Int EnsurePlayableGrid(Vector2Int gridSize)
     {
         int columns = Mathf.Max(1, gridSize.x);
         int rows = Mathf.Max(1, gridSize.y);
+        int spritePairs = settings.faceSprites == null ? 0 : settings.faceSprites.Length;
         int count = columns * rows;
-        if (count % 2 == 0)
-            return new Vector2Int(columns, rows);
 
-        if (columns <= rows)
-            columns += 1;
-        else
-            rows += 1;
+        if (count % 2 != 0)
+        {
+            if (columns <= rows)
+                columns += 1;
+            else
+                rows += 1;
+        }
 
-        Debug.LogWarning($"Board size {gridSize.x}x{gridSize.y} is odd. Auto-adjusted to {columns}x{rows}.");
-        return new Vector2Int(columns, rows);
+        int maxPairs = Mathf.Max(1, spritePairs);
+        while (columns * rows / 2 > maxPairs && columns > 1 && rows > 1)
+        {
+            if (columns >= rows)
+                columns -= 1;
+            else
+                rows -= 1;
+        }
+
+        var adjusted = new Vector2Int(columns, rows);
+        if (adjusted != gridSize)
+        {
+            Debug.LogWarning(
+                $"Board size {gridSize.x}x{gridSize.y} adjusted to {columns}x{rows} (pairs: {columns * rows / 2}, sprites: {spritePairs})."
+            );
+        }
+
+        return adjusted;
     }
 
     private static List<int> BuildPairIds(int count)
