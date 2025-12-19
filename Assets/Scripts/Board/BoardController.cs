@@ -1,0 +1,72 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public sealed class BoardController
+{
+    private readonly RectTransform boardContainer;
+    private readonly GridLayoutGroup grid;
+    private readonly BoardSettings settings;
+    private readonly CardView cardPrefab;
+
+    private readonly List<CardView> spawnedCards = new();
+
+    public BoardController(RectTransform boardContainer, GridLayoutGroup grid, BoardSettings settings, CardView cardPrefab)
+    {
+        this.boardContainer = boardContainer;
+        this.grid = grid;
+        this.settings = settings;
+        this.cardPrefab = cardPrefab;
+    }
+
+    public void BuildBoard(Vector2Int gridSize)
+    {
+        ClearBoard();
+        ConfigureGrid(gridSize);
+        SpawnCards(gridSize);
+    }
+
+    private void ConfigureGrid(Vector2Int gridSize)
+    {
+        int columns = Mathf.Max(1, gridSize.x);
+        int rows = Mathf.Max(1, gridSize.y);
+
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = columns;
+        grid.spacing = Vector2.one * settings.spacing;
+        grid.padding = CreatePadding(settings.padding);
+
+        float availableWidth =
+            boardContainer.rect.width - settings.padding * 2f - settings.spacing * (columns - 1);
+
+        float availableHeight =
+            boardContainer.rect.height - settings.padding * 2f - settings.spacing * (rows - 1);
+
+        float cellSize = Mathf.Floor(Mathf.Min(availableWidth / columns, availableHeight / rows));
+        grid.cellSize = new Vector2(cellSize, cellSize);
+    }
+
+    private void SpawnCards(Vector2Int gridSize)
+    {
+        int count = Mathf.Max(1, gridSize.x) * Mathf.Max(1, gridSize.y);
+        for (int i = 0; i < count; i++)
+        {
+            var card = Object.Instantiate(cardPrefab, grid.transform);
+            spawnedCards.Add(card);
+        }
+    }
+
+    private void ClearBoard()
+    {
+        foreach (var card in spawnedCards)
+            if (card != null) Object.Destroy(card.gameObject);
+
+        spawnedCards.Clear();
+    }
+
+    private static RectOffset CreatePadding(float value)
+    {
+        int v = Mathf.RoundToInt(value);
+        return new RectOffset(v, v, v, v);
+    }
+}
