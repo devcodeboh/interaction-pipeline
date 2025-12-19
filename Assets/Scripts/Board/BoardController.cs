@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,8 @@ public sealed class BoardController
     private readonly CardView cardPrefab;
 
     private readonly List<CardView> spawnedCards = new();
+
+    public event Action<int> CardClicked;
 
     public BoardController(RectTransform boardContainer, GridLayoutGroup grid, BoardSettings settings, CardView cardPrefab)
     {
@@ -52,6 +55,8 @@ public sealed class BoardController
         for (int i = 0; i < count; i++)
         {
             var card = Object.Instantiate(cardPrefab, grid.transform);
+            card.Bind(i);
+            card.Clicked += HandleCardClicked;
             spawnedCards.Add(card);
         }
     }
@@ -59,7 +64,13 @@ public sealed class BoardController
     private void ClearBoard()
     {
         foreach (var card in spawnedCards)
-            if (card != null) Object.Destroy(card.gameObject);
+        {
+            if (card == null)
+                continue;
+
+            card.Clicked -= HandleCardClicked;
+            Object.Destroy(card.gameObject);
+        }
 
         spawnedCards.Clear();
     }
@@ -68,5 +79,10 @@ public sealed class BoardController
     {
         int v = Mathf.RoundToInt(value);
         return new RectOffset(v, v, v, v);
+    }
+
+    private void HandleCardClicked(int index)
+    {
+        CardClicked?.Invoke(index);
     }
 }
