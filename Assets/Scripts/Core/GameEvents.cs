@@ -37,5 +37,29 @@ public static class GameEvents
             FaceUp = faceUp;
         }
     }
+
+    public readonly struct CardMatchResolved
+    {
+        public readonly int FirstIndex;
+        public readonly int SecondIndex;
+        public readonly int PairId;
+        public CardMatchResolved(int firstIndex, int secondIndex, int pairId)
+        {
+            FirstIndex = firstIndex;
+            SecondIndex = secondIndex;
+            PairId = pairId;
+        }
+    }
+
+    public readonly struct CardMismatchResolved
+    {
+        public readonly int FirstIndex;
+        public readonly int SecondIndex;
+        public CardMismatchResolved(int firstIndex, int secondIndex)
+        {
+            FirstIndex = firstIndex;
+            SecondIndex = secondIndex;
+        }
+    }
 }
 
