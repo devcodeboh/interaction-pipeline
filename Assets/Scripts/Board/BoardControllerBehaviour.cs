@@ -82,6 +82,12 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
 
     private bool EnsureInitialized()
     {
+        if (bus == null)
+        {
+            var gameController = Object.FindFirstObjectByType<GameController>();
+            bus = gameController != null ? gameController.Bus : null;
+        }
+
         if (cardPrefab == null)
         {
             Debug.LogError("BoardControllerBehaviour: Card Prefab is missing.");
@@ -93,12 +99,6 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
 
         if (resolver == null)
             resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
-
-        if (bus == null)
-        {
-            var gameController = Object.FindFirstObjectByType<GameController>();
-            bus = gameController != null ? gameController.Bus : null;
-        }
 
         return true;
     }
