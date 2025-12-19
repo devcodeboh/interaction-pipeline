@@ -17,7 +17,13 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
         controller = new BoardController(boardContainer, grid, settings, cardPrefab, bus);
         controller.BuildBoard(settings.gridSize);
         resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
-        resolver.Initialize(controller.Models, controller.Views, bus, settings.mismatchFlipBackDelay);
+        resolver.Initialize(
+            controller.Models,
+            controller.Views,
+            bus,
+            settings.mismatchFlipBackDelay,
+            settings.matchHideDelay
+        );
         StartCoroutine(PreviewCards(settings.previewFaceUpDuration));
     }
 
@@ -28,7 +34,12 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
             resolver.SetEnabled(false);
 
         foreach (var model in controller.Models)
+        {
+            if (model.State == CardState.Matched)
+                continue;
+
             model.SetState(CardState.FaceUp);
+        }
 
         foreach (var view in controller.Views)
             view.PlayFlip(true);
@@ -37,7 +48,12 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
             yield return new WaitForSeconds(duration);
 
         foreach (var model in controller.Models)
+        {
+            if (model.State == CardState.Matched)
+                continue;
+
             model.SetState(CardState.FaceDown);
+        }
 
         foreach (var view in controller.Views)
             view.PlayFlip(false);

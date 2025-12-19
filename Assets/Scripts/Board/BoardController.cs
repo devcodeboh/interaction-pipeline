@@ -65,6 +65,7 @@ public sealed class BoardController
     private void SpawnCards(Vector2Int gridSize)
     {
         int count = Mathf.Max(1, gridSize.x) * Mathf.Max(1, gridSize.y);
+        var pairIds = BuildPairIds(count);
         for (int i = 0; i < count; i++)
         {
             var card = UnityEngine.Object.Instantiate(cardPrefab, grid.transform);
@@ -72,10 +73,15 @@ public sealed class BoardController
             card.Clicked += HandleCardClicked;
             card.SetInstant(false);
             spawnedCards.Add(card);
-            int pairId = i / 2;
-            models.Add(new CardModel(i, pairId));
+            int pairId = pairIds[i];
+            var model = new CardModel(i, pairId);
+            if (pairId < 0)
+                model.SetState(CardState.Matched);
+            models.Add(model);
             card.SetBackSprite(settings.backSprite);
             card.SetFaceSprite(GetFaceSprite(pairId));
+            if (pairId < 0)
+                card.SetMatchedHidden(true);
         }
     }
 
@@ -106,6 +112,9 @@ public sealed class BoardController
 
     private Sprite GetFaceSprite(int pairId)
     {
+        if (pairId < 0)
+            return null;
+
         var sprites = settings.faceSprites;
         if (sprites == null || sprites.Length == 0)
             return null;
@@ -114,6 +123,33 @@ public sealed class BoardController
             return null;
 
         return sprites[pairId];
+    }
+
+    private static List<int> BuildPairIds(int count)
+    {
+        var ids = new List<int>(count);
+        int pairCount = count / 2;
+        for (int i = 0; i < pairCount; i++)
+        {
+            ids.Add(i);
+            ids.Add(i);
+        }
+
+        if (count % 2 != 0)
+            ids.Add(-1);
+
+        Shuffle(ids);
+        return ids;
+    }
+
+    private static void Shuffle(List<int> list)
+    {
+        var rng = new System.Random();
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int swap = rng.Next(i + 1);
+            (list[i], list[swap]) = (list[swap], list[i]);
+        }
     }
 
     private void HandleCardClicked(int index)

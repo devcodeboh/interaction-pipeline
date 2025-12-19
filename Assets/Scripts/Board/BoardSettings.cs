@@ -22,4 +22,7 @@ public sealed class BoardSettings : ScriptableObject
     [Header("Matching")]
     [Min(0f)]
     public float mismatchFlipBackDelay = 0.6f;
+
+    [Min(0f)]
+    public float matchHideDelay = 1.5f;
 }

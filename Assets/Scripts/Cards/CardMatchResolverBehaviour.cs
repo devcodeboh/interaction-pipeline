@@ -8,12 +8,13 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
     private IReadOnlyList<CardView> views;
     private EventBus bus;
     private float mismatchDelay;
+    private float matchHideDelay;
     private bool isEnabled = true;
 
     private readonly List<int> faceUp = new();
     private readonly HashSet<int> resolving = new();
 
-    public void Initialize(IReadOnlyList<CardModel> models, IReadOnlyList<CardView> views, EventBus bus, float mismatchDelay)
+    public void Initialize(IReadOnlyList<CardModel> models, IReadOnlyList<CardView> views, EventBus bus, float mismatchDelay, float matchHideDelay)
     {
         Unsubscribe();
 
@@ -21,6 +22,7 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
         this.views = views;
         this.bus = bus;
         this.mismatchDelay = Mathf.Max(0f, mismatchDelay);
+        this.matchHideDelay = Mathf.Max(0f, matchHideDelay);
 
         if (this.bus != null)
             this.bus.OnCardFlipStarted += HandleCardFlipStarted;
@@ -71,8 +73,7 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
             {
                 firstModel.SetState(CardState.Matched);
                 secondModel.SetState(CardState.Matched);
-                views[first].SetMatchedHidden(true);
-                views[second].SetMatchedHidden(true);
+                StartCoroutine(HideMatchedAfterDelay(first, second));
 
                 faceUp.Remove(first);
                 faceUp.Remove(second);
@@ -103,6 +104,27 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
         bus?.Publish(new GameEvents.CardMismatchResolved(first, second));
 
         TryResolvePairs();
+    }
+
+    private IEnumerator HideMatchedAfterDelay(int first, int second)
+    {
+        if (matchHideDelay > 0f)
+            yield return new WaitForSeconds(matchHideDelay);
+
+        HideIfValid(first);
+        HideIfValid(second);
+    }
+
+    private void HideIfValid(int index)
+    {
+        if (index < 0 || index >= views.Count)
+            return;
+
+        var view = views[index];
+        if (view == null)
+            return;
+
+        view.SetMatchedHidden(true);
     }
 
     private void FlipDownIfNeeded(int index)
