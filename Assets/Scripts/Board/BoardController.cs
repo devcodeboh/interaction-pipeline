@@ -9,6 +9,7 @@ public sealed class BoardController
     private readonly GridLayoutGroup grid;
     private readonly BoardSettings settings;
     private readonly CardView cardPrefab;
+    private readonly EventBus bus;
 
     private readonly List<CardView> spawnedCards = new();
     private readonly List<CardModel> models = new();
@@ -16,12 +17,13 @@ public sealed class BoardController
 
     public event Action<int> CardClicked;
 
-    public BoardController(RectTransform boardContainer, GridLayoutGroup grid, BoardSettings settings, CardView cardPrefab)
+    public BoardController(RectTransform boardContainer, GridLayoutGroup grid, BoardSettings settings, CardView cardPrefab, EventBus bus)
     {
         this.boardContainer = boardContainer;
         this.grid = grid;
         this.settings = settings;
         this.cardPrefab = cardPrefab;
+        this.bus = bus;
     }
 
     public void BuildBoard(Vector2Int gridSize)
@@ -29,7 +31,7 @@ public sealed class BoardController
         ClearBoard();
         ConfigureGrid(gridSize);
         SpawnCards(gridSize);
-        inputController = new CardInputController(models, spawnedCards);
+        inputController = new CardInputController(models, spawnedCards, bus);
         CardClicked += inputController.HandleCardClicked;
     }
 
