@@ -12,7 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82d75b2b35c2a684cb2407ba41845903, type: 3}
   m_Name: DefaultAppInstaller
   m_EditorClassIdentifier: 
-  uiRootPrefab: {fileID: 0}
-  boardRootPrefab: {fileID: 0}
-  boardSettings: {fileID: 0}
-  cardPrefab: {fileID: 0}
+  uiRootPrefab: {fileID: 520513833969925124, guid: acb1a778c1c943a4a8d1d5f975cc84c6, type: 3}
+  levelSelectPrefab: {fileID: 0}
+  hudPrefab: {fileID: 0}
+  homeButtonPrefab: {fileID: 0}
+  nextButtonPrefab: {fileID: 0}
+  levelConfig: {fileID: 11400000, guid: df96e35a40624ba0a878f88c60474f2c, type: 2}
+  boardRootPrefab: {fileID: 8019867520931000146, guid: 339abdca46506f34991b3a00990ccae4, type: 3}
+  boardSettings: {fileID: 11400000, guid: 4996d46a444e9324daf26edfcbfd0cb5, type: 2}
+  cardPrefab: {fileID: 6319248394402112418, guid: 519301906fc71d24da59d66d9f42eec6, type: 3}
