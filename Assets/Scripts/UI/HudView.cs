@@ -1,10 +1,11 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public sealed class HudView : MonoBehaviour
 {
-    [SerializeField] private Text matchesText;
-    [SerializeField] private Text turnsText;
+    [SerializeField] private TextMeshProUGUI matchesText;
+    [SerializeField] private TextMeshProUGUI turnsText;
 
     public void SetMatches(int value)
     {
