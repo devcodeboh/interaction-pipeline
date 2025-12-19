@@ -11,6 +11,8 @@ public sealed class BoardController
     private readonly CardView cardPrefab;
 
     private readonly List<CardView> spawnedCards = new();
+    private readonly List<CardModel> models = new();
+    private CardInputController inputController;
 
     public event Action<int> CardClicked;
 
@@ -27,6 +29,8 @@ public sealed class BoardController
         ClearBoard();
         ConfigureGrid(gridSize);
         SpawnCards(gridSize);
+        inputController = new CardInputController(models, spawnedCards);
+        CardClicked += inputController.HandleCardClicked;
     }
 
     private void ConfigureGrid(Vector2Int gridSize)
@@ -57,12 +61,17 @@ public sealed class BoardController
             var card = Object.Instantiate(cardPrefab, grid.transform);
             card.Bind(i);
             card.Clicked += HandleCardClicked;
+            card.SetInstant(false);
             spawnedCards.Add(card);
+            models.Add(new CardModel(i, i / 2));
         }
     }
 
     private void ClearBoard()
     {
+        if (inputController != null)
+            CardClicked -= inputController.HandleCardClicked;
+
         foreach (var card in spawnedCards)
         {
             if (card == null)
@@ -73,6 +82,8 @@ public sealed class BoardController
         }
 
         spawnedCards.Clear();
+        models.Clear();
+        inputController = null;
     }
 
     private static RectOffset CreatePadding(float value)
