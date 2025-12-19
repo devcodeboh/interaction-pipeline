@@ -6,18 +6,31 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
 {
     [SerializeField] private RectTransform boardContainer;
     [SerializeField] private GridLayoutGroup grid;
+    [SerializeField] private CardView cardPrefab;
 
     private BoardController controller;
     private CardMatchResolverBehaviour resolver;
+    private BoardSettings currentSettings;
+    private EventBus bus;
+
+    public bool IsInitialized => controller != null;
 
     public void Initialize(BoardSettings settings, CardView cardPrefab)
     {
-        var gameController = Object.FindFirstObjectByType<GameController>();
-        var bus = gameController != null ? gameController.Bus : null;
-        controller = new BoardController(boardContainer, grid, settings, cardPrefab, bus);
+        if (cardPrefab != null)
+            this.cardPrefab = cardPrefab;
+
+        currentSettings = settings;
+        Rebuild(settings);
+    }
+
+    public void Rebuild(BoardSettings settings)
+    {
+        currentSettings = settings;
+        if (!EnsureInitialized())
+            return;
+
         controller.BuildBoard(settings.gridSize);
-        if (resolver == null)
-            resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
         resolver.Initialize(
             controller.Models,
             controller.Views,
@@ -25,6 +38,7 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
             settings.mismatchFlipBackDelay,
             settings.matchHideDelay
         );
+        StopAllCoroutines();
         StartCoroutine(PreviewCards(settings.previewFaceUpDuration));
     }
 
@@ -64,6 +78,29 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
             resolver.SetEnabled(true);
 
         controller.SetInputEnabled(true);
+    }
+
+    private bool EnsureInitialized()
+    {
+        if (bus == null)
+        {
+            var gameController = Object.FindFirstObjectByType<GameController>();
+            bus = gameController != null ? gameController.Bus : null;
+        }
+
+        if (cardPrefab == null)
+        {
+            Debug.LogError("BoardControllerBehaviour: Card Prefab is missing.");
+            return false;
+        }
+
+        if (controller == null)
+            controller = new BoardController(boardContainer, grid, currentSettings, cardPrefab, bus);
+
+        if (resolver == null)
+            resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
+
+        return true;
     }
 
     private void Awake()
