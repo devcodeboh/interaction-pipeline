@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Logo_UI_jungle_0: 1872026330631441680
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
