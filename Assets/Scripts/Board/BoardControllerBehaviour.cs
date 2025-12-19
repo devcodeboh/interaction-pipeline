@@ -10,7 +10,9 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
 
     public void Initialize(BoardSettings settings, CardView cardPrefab)
     {
-        controller = new BoardController(boardContainer, grid, settings, cardPrefab);
+        var gameController = Object.FindFirstObjectByType<GameController>();
+        var bus = gameController != null ? gameController.Bus : null;
+        controller = new BoardController(boardContainer, grid, settings, cardPrefab, bus);
         controller.BuildBoard(settings.gridSize);
     }
 
