@@ -16,6 +16,8 @@ public sealed class BoardController
     private CardInputController inputController;
 
     public event Action<int> CardClicked;
+    public IReadOnlyList<CardView> Views => spawnedCards;
+    public IReadOnlyList<CardModel> Models => models;
 
     public BoardController(RectTransform boardContainer, GridLayoutGroup grid, BoardSettings settings, CardView cardPrefab, EventBus bus)
     {
@@ -60,7 +62,7 @@ public sealed class BoardController
         int count = Mathf.Max(1, gridSize.x) * Mathf.Max(1, gridSize.y);
         for (int i = 0; i < count; i++)
         {
-            var card = Object.Instantiate(cardPrefab, grid.transform);
+            var card = UnityEngine.Object.Instantiate(cardPrefab, grid.transform);
             card.Bind(i);
             card.Clicked += HandleCardClicked;
             card.SetInstant(false);
@@ -80,7 +82,7 @@ public sealed class BoardController
                 continue;
 
             card.Clicked -= HandleCardClicked;
-            Object.Destroy(card.gameObject);
+            UnityEngine.Object.Destroy(card.gameObject);
         }
 
         spawnedCards.Clear();

@@ -7,6 +7,7 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
     [SerializeField] private GridLayoutGroup grid;
 
     private BoardController controller;
+    private CardMatchResolverBehaviour resolver;
 
     public void Initialize(BoardSettings settings, CardView cardPrefab)
     {
@@ -14,6 +15,8 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
         var bus = gameController != null ? gameController.Bus : null;
         controller = new BoardController(boardContainer, grid, settings, cardPrefab, bus);
         controller.BuildBoard(settings.gridSize);
+        resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
+        resolver.Initialize(controller.Models, controller.Views, bus, settings.mismatchFlipBackDelay);
     }
 
     private void Awake()
