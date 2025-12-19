@@ -37,7 +37,8 @@ public static class RuntimeBootstrap
             installer.homeButtonPrefab == null ||
             installer.nextButtonPrefab == null ||
             installer.winPopupPrefab == null ||
-            installer.levelConfig == null)
+            installer.levelConfig == null ||
+            installer.audioConfig == null)
         {
             Debug.LogError("AppInstaller: required references are not fully assigned.");
             return;
@@ -95,6 +96,12 @@ public static class RuntimeBootstrap
             completionController = uiRoot.AddComponent<GameCompletionController>();
 
         completionController.Initialize(board, gameController, bus);
+
+        var audioController = root.GetComponent<AudioController>();
+        if (audioController == null)
+            audioController = root.AddComponent<AudioController>();
+
+        audioController.Initialize(installer.audioConfig, bus);
 
         var winPopupController = uiRoot.GetComponent<WinPopupController>();
         if (winPopupController == null)
