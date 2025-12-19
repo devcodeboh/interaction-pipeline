@@ -40,12 +40,13 @@ public sealed class CardView : MonoBehaviour, IPointerClickHandler
 
     public void PlayFlip(bool faceUp)
     {
-        if (isAnimating || faceUp == isFaceUp)
+        if (!isAnimating && faceUp == isFaceUp)
             return;
 
         if (flipRoutine != null)
             StopCoroutine(flipRoutine);
 
+        isAnimating = false;
         flipRoutine = StartCoroutine(FlipRoutine(faceUp));
     }
 
