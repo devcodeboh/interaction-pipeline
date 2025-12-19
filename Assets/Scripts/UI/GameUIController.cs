@@ -25,12 +25,20 @@ public sealed class GameUIController : MonoBehaviour
             this.levelSelect.OnDifficultySelected += HandleDifficultySelected;
             this.levelSelect.OnPlayRequested += HandlePlayRequested;
         }
+        else
+        {
+            Debug.LogWarning("GameUIController: LevelSelectPanel is missing.");
+        }
 
         if (this.homeButton != null)
             this.homeButton.Clicked += HandleHomeRequested;
+        else
+            Debug.LogWarning("GameUIController: HomeButtonView is missing.");
 
         if (this.nextButton != null)
             this.nextButton.Clicked += HandleNextRequested;
+        else
+            Debug.LogWarning("GameUIController: NextButtonView is missing.");
     }
 
     public void ShowMenu()

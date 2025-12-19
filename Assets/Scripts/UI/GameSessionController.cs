@@ -8,6 +8,7 @@ public sealed class GameSessionController : MonoBehaviour
     private BoardSettings settings;
     private LevelConfig levelConfig;
     private GameUIController ui;
+    private CardView cardPrefab;
 
     private LevelDifficulty currentDifficulty = DefaultDifficulty;
 
@@ -17,13 +18,12 @@ public sealed class GameSessionController : MonoBehaviour
         this.settings = settings;
         this.levelConfig = levelConfig;
         this.ui = ui;
+        this.cardPrefab = cardPrefab;
 
         ui.DifficultySelected += HandleDifficultySelected;
         ui.PlayRequested += HandlePlayRequested;
         ui.HomeRequested += HandleHomeRequested;
         ui.NextRequested += HandleNextRequested;
-
-        board.Initialize(settings, cardPrefab);
     }
 
     public void ShowMenu()
@@ -64,6 +64,9 @@ public sealed class GameSessionController : MonoBehaviour
         settings.mismatchFlipBackDelay = preset.mismatchFlipBackDelay;
         settings.matchHideDelay = preset.matchHideDelay;
 
-        board.Rebuild(settings);
+        if (!board.IsInitialized)
+            board.Initialize(settings, cardPrefab);
+        else
+            board.Rebuild(settings);
     }
 }

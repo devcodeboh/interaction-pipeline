@@ -14,6 +14,9 @@ public sealed class LevelSelectPanel : MonoBehaviour
 
     private void OnEnable()
     {
+        if (easyButton == null || mediumButton == null || hardButton == null || playButton == null)
+            Debug.LogWarning("LevelSelectPanel: missing button references.");
+
         if (easyButton != null) easyButton.onClick.AddListener(() => Select(LevelDifficulty.Easy));
         if (mediumButton != null) mediumButton.onClick.AddListener(() => Select(LevelDifficulty.Medium));
         if (hardButton != null) hardButton.onClick.AddListener(() => Select(LevelDifficulty.Hard));

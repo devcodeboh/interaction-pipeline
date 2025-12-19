@@ -13,16 +13,23 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
     private BoardSettings currentSettings;
     private EventBus bus;
 
+    public bool IsInitialized => controller != null;
+
     public void Initialize(BoardSettings settings, CardView cardPrefab)
     {
-        this.cardPrefab = cardPrefab;
+        if (cardPrefab != null)
+            this.cardPrefab = cardPrefab;
+
+        currentSettings = settings;
         Rebuild(settings);
     }
 
     public void Rebuild(BoardSettings settings)
     {
         currentSettings = settings;
-        EnsureInitialized();
+        if (!EnsureInitialized())
+            return;
+
         controller.BuildBoard(settings.gridSize);
         resolver.Initialize(
             controller.Models,
@@ -73,8 +80,14 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
         controller.SetInputEnabled(true);
     }
 
-    private void EnsureInitialized()
+    private bool EnsureInitialized()
     {
+        if (cardPrefab == null)
+        {
+            Debug.LogError("BoardControllerBehaviour: Card Prefab is missing.");
+            return false;
+        }
+
         if (controller == null)
             controller = new BoardController(boardContainer, grid, currentSettings, cardPrefab, bus);
 
@@ -86,11 +99,13 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
             var gameController = Object.FindFirstObjectByType<GameController>();
             bus = gameController != null ? gameController.Bus : null;
         }
+
+        return true;
     }
 
     private void Awake()
     {
-        if (boardContainer == null || grid == null || cardPrefab == null)
+        if (boardContainer == null || grid == null)
         {
             Debug.LogError("BoardControllerBehaviour: internal prefab references are missing.");
             enabled = false;
