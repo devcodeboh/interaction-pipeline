@@ -20,6 +20,7 @@ public sealed class CardView : MonoBehaviour, IPointerClickHandler
     private Coroutine flipRoutine;
     private bool isAnimating;
     private bool isFaceUp;
+    private CanvasGroup canvasGroup;
 
     public void Bind(int index)
     {
@@ -38,12 +39,30 @@ public sealed class CardView : MonoBehaviour, IPointerClickHandler
         SetScaleX(1f);
     }
 
+    public void SetBackSprite(Sprite sprite)
+    {
+        if (backImage == null)
+            return;
+
+        backImage.sprite = sprite;
+    }
+
     public void SetFaceSprite(Sprite sprite)
     {
         if (faceImage == null)
             return;
 
         faceImage.sprite = sprite;
+    }
+
+    public void SetMatchedHidden(bool hidden)
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = hidden ? 0f : 1f;
+        canvasGroup.blocksRaycasts = !hidden;
+        canvasGroup.interactable = !hidden;
     }
 
     public void PlayFlip(bool faceUp)
@@ -63,6 +82,11 @@ public sealed class CardView : MonoBehaviour, IPointerClickHandler
         if (flipRoot == null)
             flipRoot = transform as RectTransform;
 
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        SetMatchedHidden(false);
         SetInstant(false);
     }
 

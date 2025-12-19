@@ -8,6 +8,7 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
     private IReadOnlyList<CardView> views;
     private EventBus bus;
     private float mismatchDelay;
+    private bool isEnabled = true;
 
     private readonly List<int> faceUp = new();
     private readonly HashSet<int> resolving = new();
@@ -25,6 +26,8 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
             this.bus.OnCardFlipStarted += HandleCardFlipStarted;
     }
 
+    public void SetEnabled(bool enabled) => isEnabled = enabled;
+
     private void OnDestroy()
     {
         Unsubscribe();
@@ -32,6 +35,9 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
 
     private void HandleCardFlipStarted(GameEvents.CardFlipStarted eventData)
     {
+        if (!isEnabled)
+            return;
+
         if (!eventData.FaceUp)
             return;
 
@@ -65,6 +71,8 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
             {
                 firstModel.SetState(CardState.Matched);
                 secondModel.SetState(CardState.Matched);
+                views[first].SetMatchedHidden(true);
+                views[second].SetMatchedHidden(true);
 
                 faceUp.Remove(first);
                 faceUp.Remove(second);

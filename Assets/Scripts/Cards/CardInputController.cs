@@ -5,6 +5,7 @@ public sealed class CardInputController
     private readonly IReadOnlyList<CardModel> models;
     private readonly IReadOnlyList<CardView> views;
     private readonly EventBus bus;
+    private bool inputEnabled = true;
 
     public CardInputController(IReadOnlyList<CardModel> models, IReadOnlyList<CardView> views, EventBus bus)
     {
@@ -13,8 +14,13 @@ public sealed class CardInputController
         this.bus = bus;
     }
 
+    public void SetInputEnabled(bool enabled) => inputEnabled = enabled;
+
     public void HandleCardClicked(int index)
     {
+        if (!inputEnabled)
+            return;
+
         if (index < 0 || index >= models.Count || index >= views.Count)
             return;
 

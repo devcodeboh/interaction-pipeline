@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +18,34 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
         controller.BuildBoard(settings.gridSize);
         resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
         resolver.Initialize(controller.Models, controller.Views, bus, settings.mismatchFlipBackDelay);
+        StartCoroutine(PreviewCards(settings.previewFaceUpDuration));
+    }
+
+    private IEnumerator PreviewCards(float duration)
+    {
+        controller.SetInputEnabled(false);
+        if (resolver != null)
+            resolver.SetEnabled(false);
+
+        foreach (var model in controller.Models)
+            model.SetState(CardState.FaceUp);
+
+        foreach (var view in controller.Views)
+            view.PlayFlip(true);
+
+        if (duration > 0f)
+            yield return new WaitForSeconds(duration);
+
+        foreach (var model in controller.Models)
+            model.SetState(CardState.FaceDown);
+
+        foreach (var view in controller.Views)
+            view.PlayFlip(false);
+
+        if (resolver != null)
+            resolver.SetEnabled(true);
+
+        controller.SetInputEnabled(true);
     }
 
     private void Awake()

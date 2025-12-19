@@ -14,6 +14,10 @@ public sealed class BoardSettings : ScriptableObject
 
     [Header("Visuals")]
     public Sprite[] faceSprites;
+    public Sprite backSprite;
+
+    [Min(0f)]
+    public float previewFaceUpDuration = 1.5f;
 
     [Header("Matching")]
     [Min(0f)]

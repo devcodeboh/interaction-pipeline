@@ -37,6 +37,11 @@ public sealed class BoardController
         CardClicked += inputController.HandleCardClicked;
     }
 
+    public void SetInputEnabled(bool enabled)
+    {
+        inputController?.SetInputEnabled(enabled);
+    }
+
     private void ConfigureGrid(Vector2Int gridSize)
     {
         int columns = Mathf.Max(1, gridSize.x);
@@ -69,6 +74,7 @@ public sealed class BoardController
             spawnedCards.Add(card);
             int pairId = i / 2;
             models.Add(new CardModel(i, pairId));
+            card.SetBackSprite(settings.backSprite);
             card.SetFaceSprite(GetFaceSprite(pairId));
         }
     }
