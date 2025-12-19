@@ -160,23 +160,24 @@ public sealed class BoardController
         return adjusted;
     }
 
-    private static List<int> BuildPairIds(int count)
+    private static int[] BuildPairIds(int count)
     {
-        var ids = new List<int>(count);
+        var ids = new int[count];
         int pairCount = count / 2;
+        int index = 0;
         for (int i = 0; i < pairCount; i++)
         {
-            ids.Add(i);
-            ids.Add(i);
+            ids[index++] = i;
+            ids[index++] = i;
         }
 
         Shuffle(ids);
         return ids;
     }
 
-    private static void Shuffle(List<int> list)
+    private static void Shuffle(int[] list)
     {
-        for (int i = list.Count - 1; i > 0; i--)
+        for (int i = list.Length - 1; i > 0; i--)
         {
             int swap = UnityEngine.Random.Range(0, i + 1);
             (list[i], list[swap]) = (list[swap], list[i]);
