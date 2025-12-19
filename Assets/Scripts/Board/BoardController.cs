@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +14,8 @@ public sealed class BoardController
     private readonly List<CardModel> models = new();
     private CardInputController inputController;
 
-    public event Action<int> CardClicked;
+    public IReadOnlyList<CardView> Views => spawnedCards;
+    public IReadOnlyList<CardModel> Models => models;
 
     public BoardController(RectTransform boardContainer, GridLayoutGroup grid, BoardSettings settings, CardView cardPrefab, EventBus bus)
     {
@@ -29,10 +29,15 @@ public sealed class BoardController
     public void BuildBoard(Vector2Int gridSize)
     {
         ClearBoard();
+        gridSize = EnsurePlayableGrid(gridSize);
         ConfigureGrid(gridSize);
-        SpawnCards(gridSize);
         inputController = new CardInputController(models, spawnedCards, bus);
-        CardClicked += inputController.HandleCardClicked;
+        SpawnCards(gridSize);
+    }
+
+    public void SetInputEnabled(bool enabled)
+    {
+        inputController?.SetInputEnabled(enabled);
     }
 
     private void ConfigureGrid(Vector2Int gridSize)
@@ -58,29 +63,31 @@ public sealed class BoardController
     private void SpawnCards(Vector2Int gridSize)
     {
         int count = Mathf.Max(1, gridSize.x) * Mathf.Max(1, gridSize.y);
+        var pairIds = BuildPairIds(count);
         for (int i = 0; i < count; i++)
         {
-            var card = Object.Instantiate(cardPrefab, grid.transform);
+            var card = UnityEngine.Object.Instantiate(cardPrefab, grid.transform);
             card.Bind(i);
-            card.Clicked += HandleCardClicked;
+            card.Clicked += inputController.HandleCardClicked;
             card.SetInstant(false);
             spawnedCards.Add(card);
-            models.Add(new CardModel(i, i / 2));
+            int pairId = pairIds[i];
+            models.Add(new CardModel(i, pairId));
+            card.SetBackSprite(settings.backSprite);
+            card.SetFaceSprite(GetFaceSprite(pairId));
         }
     }
 
     private void ClearBoard()
     {
-        if (inputController != null)
-            CardClicked -= inputController.HandleCardClicked;
-
         foreach (var card in spawnedCards)
         {
             if (card == null)
                 continue;
 
-            card.Clicked -= HandleCardClicked;
-            Object.Destroy(card.gameObject);
+            if (inputController != null)
+                card.Clicked -= inputController.HandleCardClicked;
+            UnityEngine.Object.Destroy(card.gameObject);
         }
 
         spawnedCards.Clear();
@@ -94,8 +101,74 @@ public sealed class BoardController
         return new RectOffset(v, v, v, v);
     }
 
-    private void HandleCardClicked(int index)
+    private Sprite GetFaceSprite(int pairId)
     {
-        CardClicked?.Invoke(index);
+        var sprites = settings.faceSprites;
+        if (sprites == null || sprites.Length == 0)
+            return null;
+
+        if (pairId < 0 || pairId >= sprites.Length)
+            return null;
+
+        return sprites[pairId];
     }
+
+    private Vector2Int EnsurePlayableGrid(Vector2Int gridSize)
+    {
+        int columns = Mathf.Max(1, gridSize.x);
+        int rows = Mathf.Max(1, gridSize.y);
+        int spritePairs = settings.faceSprites == null ? 0 : settings.faceSprites.Length;
+        int count = columns * rows;
+
+        if (count % 2 != 0)
+        {
+            if (columns <= rows)
+                columns += 1;
+            else
+                rows += 1;
+        }
+
+        int maxPairs = Mathf.Max(1, spritePairs);
+        while (columns * rows / 2 > maxPairs && columns > 1 && rows > 1)
+        {
+            if (columns >= rows)
+                columns -= 1;
+            else
+                rows -= 1;
+        }
+
+        var adjusted = new Vector2Int(columns, rows);
+        if (adjusted != gridSize)
+        {
+            Debug.LogWarning(
+                $"Board size {gridSize.x}x{gridSize.y} adjusted to {columns}x{rows} (pairs: {columns * rows / 2}, sprites: {spritePairs})."
+            );
+        }
+
+        return adjusted;
+    }
+
+    private static List<int> BuildPairIds(int count)
+    {
+        var ids = new List<int>(count);
+        int pairCount = count / 2;
+        for (int i = 0; i < pairCount; i++)
+        {
+            ids.Add(i);
+            ids.Add(i);
+        }
+
+        Shuffle(ids);
+        return ids;
+    }
+
+    private static void Shuffle(List<int> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int swap = UnityEngine.Random.Range(0, i + 1);
+            (list[i], list[swap]) = (list[swap], list[i]);
+        }
+    }
+
 }
