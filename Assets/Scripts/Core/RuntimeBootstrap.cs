@@ -31,9 +31,14 @@ public static class RuntimeBootstrap
 
         if (installer.boardRootPrefab == null ||
             installer.boardSettings == null ||
-            installer.cardPrefab == null)
+            installer.cardPrefab == null ||
+            installer.levelSelectPrefab == null ||
+            installer.hudPrefab == null ||
+            installer.homeButtonPrefab == null ||
+            installer.nextButtonPrefab == null ||
+            installer.levelConfig == null)
         {
-            Debug.LogError("AppInstaller: board references are not fully assigned.");
+            Debug.LogError("AppInstaller: required references are not fully assigned.");
             return;
         }
 
@@ -59,7 +64,27 @@ public static class RuntimeBootstrap
         // Board
         var board = Object.Instantiate(installer.boardRootPrefab);
         board.transform.SetParent(uiRoot.transform, false);
-        board.Initialize(installer.boardSettings, installer.cardPrefab);
+
+        // UI
+        var levelSelect = Object.Instantiate(installer.levelSelectPrefab, uiRoot.transform);
+        var hud = Object.Instantiate(installer.hudPrefab, uiRoot.transform);
+        var home = Object.Instantiate(installer.homeButtonPrefab, uiRoot.transform)
+            .GetComponent<HomeButtonView>();
+        var next = Object.Instantiate(installer.nextButtonPrefab, uiRoot.transform)
+            .GetComponent<NextButtonView>();
+
+        var uiController = uiRoot.GetComponent<GameUIController>();
+        if (uiController == null)
+            uiController = uiRoot.AddComponent<GameUIController>();
+
+        uiController.Initialize(levelSelect, hud, home, next);
+
+        var session = uiRoot.GetComponent<GameSessionController>();
+        if (session == null)
+            session = uiRoot.AddComponent<GameSessionController>();
+
+        session.Initialize(board, installer.boardSettings, installer.levelConfig, uiController, installer.cardPrefab);
+        session.ShowMenu();
     }
 
     private static void EnsureEventSystem(Transform parent)
