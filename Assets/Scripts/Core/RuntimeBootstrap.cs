@@ -87,11 +87,25 @@ public static class RuntimeBootstrap
         var bus = gameController != null ? gameController.Bus : null;
         statsController.Initialize(hud, bus);
 
+        var completionController = uiRoot.GetComponent<GameCompletionController>();
+        if (completionController == null)
+            completionController = uiRoot.AddComponent<GameCompletionController>();
+
+        completionController.Initialize(board, gameController, bus);
+
         var session = uiRoot.GetComponent<GameSessionController>();
         if (session == null)
             session = uiRoot.AddComponent<GameSessionController>();
 
-        session.Initialize(board, installer.boardSettings, installer.levelConfig, uiController, installer.cardPrefab, statsController);
+        session.Initialize(
+            board,
+            installer.boardSettings,
+            installer.levelConfig,
+            uiController,
+            installer.cardPrefab,
+            statsController,
+            completionController
+        );
         session.ShowMenu();
 
         var saveController = uiRoot.GetComponent<GameSaveController>();
