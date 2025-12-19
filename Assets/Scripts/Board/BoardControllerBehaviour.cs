@@ -16,7 +16,8 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
         var bus = gameController != null ? gameController.Bus : null;
         controller = new BoardController(boardContainer, grid, settings, cardPrefab, bus);
         controller.BuildBoard(settings.gridSize);
-        resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
+        if (resolver == null)
+            resolver = gameObject.AddComponent<CardMatchResolverBehaviour>();
         resolver.Initialize(
             controller.Models,
             controller.Views,

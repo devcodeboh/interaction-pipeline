@@ -10,6 +10,7 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
     private float mismatchDelay;
     private float matchHideDelay;
     private bool isEnabled = true;
+    private int generation;
 
     private readonly List<int> revealedOrder = new();
     private readonly HashSet<int> resolving = new();
@@ -17,6 +18,10 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
     public void Initialize(IReadOnlyList<CardModel> models, IReadOnlyList<CardView> views, EventBus bus, float mismatchDelay, float matchHideDelay)
     {
         Unsubscribe();
+        StopAllCoroutines();
+        revealedOrder.Clear();
+        resolving.Clear();
+        generation++;
 
         this.models = models;
         this.views = views;
@@ -74,7 +79,7 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
             {
                 firstModel.SetState(CardState.Matched);
                 secondModel.SetState(CardState.Matched);
-                StartCoroutine(HideMatchedAfterDelay(first, second));
+                StartCoroutine(HideMatchedAfterDelay(first, second, generation));
 
                 revealedOrder.Remove(first);
                 revealedOrder.Remove(second);
@@ -83,16 +88,20 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
                 continue;
             }
 
-            StartCoroutine(FlipBackAfterDelay(first, second));
+            StartCoroutine(FlipBackAfterDelay(first, second, generation));
             revealedOrder.Remove(first);
             revealedOrder.Remove(second);
         }
     }
 
-    private IEnumerator FlipBackAfterDelay(int first, int second)
+    private IEnumerator FlipBackAfterDelay(int first, int second, int token)
     {
         if (mismatchDelay > 0f)
             yield return new WaitForSeconds(mismatchDelay);
+
+        if (token != generation)
+            // Board was rebuilt; ignore stale coroutine.
+            yield break;
 
         FlipDownIfNeeded(first);
         FlipDownIfNeeded(second);
@@ -105,10 +114,14 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
         TryResolvePairs();
     }
 
-    private IEnumerator HideMatchedAfterDelay(int first, int second)
+    private IEnumerator HideMatchedAfterDelay(int first, int second, int token)
     {
         if (matchHideDelay > 0f)
             yield return new WaitForSeconds(matchHideDelay);
+
+        if (token != generation)
+            // Board was rebuilt; ignore stale coroutine.
+            yield break;
 
         HideIfValid(first);
         HideIfValid(second);
