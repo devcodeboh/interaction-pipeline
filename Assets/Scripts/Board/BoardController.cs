@@ -13,9 +13,11 @@ public sealed class BoardController
     private readonly List<CardView> spawnedCards = new();
     private readonly List<CardModel> models = new();
     private CardInputController inputController;
+    private Vector2Int gridSize;
 
     public IReadOnlyList<CardView> Views => spawnedCards;
     public IReadOnlyList<CardModel> Models => models;
+    public Vector2Int GridSize => gridSize;
 
     public BoardController(RectTransform boardContainer, GridLayoutGroup grid, BoardSettings settings, CardView cardPrefab, EventBus bus)
     {
@@ -29,10 +31,20 @@ public sealed class BoardController
     public void BuildBoard(Vector2Int gridSize)
     {
         ClearBoard();
-        gridSize = EnsurePlayableGrid(gridSize);
-        ConfigureGrid(gridSize);
+        this.gridSize = EnsurePlayableGrid(gridSize);
+        ConfigureGrid(this.gridSize);
         inputController = new CardInputController(models, spawnedCards, bus);
-        SpawnCards(gridSize);
+        SpawnCards(this.gridSize, null);
+    }
+
+    public void BuildBoardFromSave(Vector2Int gridSize, int[] pairIds, int[] cardStates)
+    {
+        ClearBoard();
+        this.gridSize = gridSize;
+        ConfigureGrid(this.gridSize);
+        inputController = new CardInputController(models, spawnedCards, bus);
+        SpawnCards(this.gridSize, pairIds);
+        ApplyCardStates(cardStates);
     }
 
     public void SetInputEnabled(bool enabled)
@@ -60,10 +72,10 @@ public sealed class BoardController
         grid.cellSize = new Vector2(cellSize, cellSize);
     }
 
-    private void SpawnCards(Vector2Int gridSize)
+    private void SpawnCards(Vector2Int gridSize, int[] pairIds)
     {
         int count = Mathf.Max(1, gridSize.x) * Mathf.Max(1, gridSize.y);
-        var pairIds = BuildPairIds(count);
+        var pairs = pairIds != null && pairIds.Length == count ? pairIds : BuildPairIds(count);
         for (int i = 0; i < count; i++)
         {
             var card = UnityEngine.Object.Instantiate(cardPrefab, grid.transform);
@@ -71,7 +83,7 @@ public sealed class BoardController
             card.Clicked += inputController.HandleCardClicked;
             card.SetInstant(false);
             spawnedCards.Add(card);
-            int pairId = pairIds[i];
+            int pairId = pairs[i];
             models.Add(new CardModel(i, pairId));
             card.SetBackSprite(settings.backSprite);
             card.SetFaceSprite(GetFaceSprite(pairId));
@@ -168,6 +180,55 @@ public sealed class BoardController
         {
             int swap = UnityEngine.Random.Range(0, i + 1);
             (list[i], list[swap]) = (list[swap], list[i]);
+        }
+    }
+
+    public int[] GetPairIds()
+    {
+        int[] pairIds = new int[models.Count];
+        for (int i = 0; i < models.Count; i++)
+            pairIds[i] = models[i].PairId;
+
+        return pairIds;
+    }
+
+    public int[] GetCardStates()
+    {
+        int[] states = new int[models.Count];
+        for (int i = 0; i < models.Count; i++)
+            states[i] = (int)models[i].State;
+
+        return states;
+    }
+
+    private void ApplyCardStates(int[] cardStates)
+    {
+        if (cardStates == null || cardStates.Length != models.Count)
+            return;
+
+        for (int i = 0; i < models.Count; i++)
+        {
+            var model = models[i];
+            var view = spawnedCards[i];
+            if (model == null || view == null)
+                continue;
+
+            var state = (CardState)cardStates[i];
+            model.SetState(state);
+
+            switch (state)
+            {
+                case CardState.FaceUp:
+                    view.SetInstant(true);
+                    break;
+                case CardState.Matched:
+                    view.SetInstant(true);
+                    view.SetMatchedHidden(true);
+                    break;
+                default:
+                    view.SetInstant(false);
+                    break;
+            }
         }
     }
 

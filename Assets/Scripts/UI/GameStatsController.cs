@@ -28,6 +28,16 @@ public sealed class GameStatsController : MonoBehaviour
         UpdateHud();
     }
 
+    public void SetStats(int matches, int turns)
+    {
+        this.matches = Mathf.Max(0, matches);
+        this.turns = Mathf.Max(0, turns);
+        UpdateHud();
+    }
+
+    public int GetMatches() => matches;
+    public int GetTurns() => turns;
+
     private void HandleMatchResolved(GameEvents.CardMatchResolved _)
     {
         matches += 1;
