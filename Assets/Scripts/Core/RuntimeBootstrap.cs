@@ -93,6 +93,12 @@ public static class RuntimeBootstrap
 
         session.Initialize(board, installer.boardSettings, installer.levelConfig, uiController, installer.cardPrefab, statsController);
         session.ShowMenu();
+
+        var saveController = uiRoot.GetComponent<GameSaveController>();
+        if (saveController == null)
+            saveController = uiRoot.AddComponent<GameSaveController>();
+
+        saveController.Initialize(board, session, statsController, bus);
     }
 
     private static void EnsureEventSystem(Transform parent)

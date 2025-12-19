@@ -13,6 +13,8 @@ public sealed class GameSessionController : MonoBehaviour
 
     private LevelDifficulty currentDifficulty = DefaultDifficulty;
 
+    public LevelDifficulty CurrentDifficulty => currentDifficulty;
+
     public void Initialize(BoardControllerBehaviour board, BoardSettings settings, LevelConfig levelConfig, GameUIController ui, CardView cardPrefab, GameStatsController stats)
     {
         this.board = board;
@@ -31,6 +33,25 @@ public sealed class GameSessionController : MonoBehaviour
             this.stats.ResetStats();
     }
 
+    public void LoadFromSave(GameSaveData data)
+    {
+        if (data == null || settings == null || board == null)
+            return;
+
+        NormalizeCardStates(data.cardStates);
+        currentDifficulty = (LevelDifficulty)data.difficulty;
+        ApplyPreset(levelConfig.GetPreset(currentDifficulty), false);
+        board.RestoreFromSave(
+            settings,
+            cardPrefab,
+            new Vector2Int(data.gridX, data.gridY),
+            data.pairIds,
+            data.cardStates
+        );
+        stats?.SetStats(data.matches, data.turns);
+        ui.ShowHud();
+    }
+
     public void ShowMenu()
     {
         if (ui != null)
@@ -45,7 +66,7 @@ public sealed class GameSessionController : MonoBehaviour
     private void HandlePlayRequested()
     {
         stats?.ResetStats();
-        ApplyPreset(levelConfig.GetPreset(currentDifficulty));
+        ApplyPreset(levelConfig.GetPreset(currentDifficulty), true);
         ui.ShowHud();
     }
 
@@ -58,10 +79,10 @@ public sealed class GameSessionController : MonoBehaviour
     {
         currentDifficulty = GetNextDifficulty(currentDifficulty);
         stats?.ResetStats();
-        ApplyPreset(levelConfig.GetPreset(currentDifficulty));
+        ApplyPreset(levelConfig.GetPreset(currentDifficulty), true);
     }
 
-    private void ApplyPreset(LevelPreset preset)
+    private void ApplyPreset(LevelPreset preset, bool rebuildBoard)
     {
         if (preset == null || settings == null || board == null)
             return;
@@ -71,6 +92,9 @@ public sealed class GameSessionController : MonoBehaviour
         settings.previewFaceUpDuration = preset.previewFaceUpDuration;
         settings.mismatchFlipBackDelay = preset.mismatchFlipBackDelay;
         settings.matchHideDelay = preset.matchHideDelay;
+
+        if (!rebuildBoard)
+            return;
 
         if (!board.IsInitialized)
             board.Initialize(settings, cardPrefab);
@@ -86,5 +110,17 @@ public sealed class GameSessionController : MonoBehaviour
             LevelDifficulty.Medium => LevelDifficulty.Hard,
             _ => LevelDifficulty.Hard
         };
+    }
+
+    private static void NormalizeCardStates(int[] cardStates)
+    {
+        if (cardStates == null)
+            return;
+
+        for (int i = 0; i < cardStates.Length; i++)
+        {
+            if (cardStates[i] == (int)CardState.FaceUp)
+                cardStates[i] = (int)CardState.FaceDown;
+        }
     }
 }
