@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +14,6 @@ public sealed class BoardController
     private readonly List<CardModel> models = new();
     private CardInputController inputController;
 
-    public event Action<int> CardClicked;
     public IReadOnlyList<CardView> Views => spawnedCards;
     public IReadOnlyList<CardModel> Models => models;
 
@@ -33,9 +31,8 @@ public sealed class BoardController
         ClearBoard();
         gridSize = EnsureEvenGrid(gridSize);
         ConfigureGrid(gridSize);
-        SpawnCards(gridSize);
         inputController = new CardInputController(models, spawnedCards, bus);
-        CardClicked += inputController.HandleCardClicked;
+        SpawnCards(gridSize);
     }
 
     public void SetInputEnabled(bool enabled)
@@ -71,7 +68,7 @@ public sealed class BoardController
         {
             var card = UnityEngine.Object.Instantiate(cardPrefab, grid.transform);
             card.Bind(i);
-            card.Clicked += HandleCardClicked;
+            card.Clicked += inputController.HandleCardClicked;
             card.SetInstant(false);
             spawnedCards.Add(card);
             int pairId = pairIds[i];
@@ -83,15 +80,13 @@ public sealed class BoardController
 
     private void ClearBoard()
     {
-        if (inputController != null)
-            CardClicked -= inputController.HandleCardClicked;
-
         foreach (var card in spawnedCards)
         {
             if (card == null)
                 continue;
 
-            card.Clicked -= HandleCardClicked;
+            if (inputController != null)
+                card.Clicked -= inputController.HandleCardClicked;
             UnityEngine.Object.Destroy(card.gameObject);
         }
 
@@ -158,8 +153,4 @@ public sealed class BoardController
         }
     }
 
-    private void HandleCardClicked(int index)
-    {
-        CardClicked?.Invoke(index);
-    }
 }

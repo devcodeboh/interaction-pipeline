@@ -30,6 +30,7 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
 
     private IEnumerator PreviewCards(float duration)
     {
+        // Disable input while showing the initial preview.
         controller.SetInputEnabled(false);
         if (resolver != null)
             resolver.SetEnabled(false);
