@@ -9,6 +9,7 @@ public sealed class AppInstaller : ScriptableObject
     public HudView hudPrefab;
     public GameObject homeButtonPrefab;
     public GameObject nextButtonPrefab;
+    public WinPopupView winPopupPrefab;
 
     [Header("Levels")]
     public LevelConfig levelConfig;

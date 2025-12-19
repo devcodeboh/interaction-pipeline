@@ -36,6 +36,7 @@ public static class RuntimeBootstrap
             installer.hudPrefab == null ||
             installer.homeButtonPrefab == null ||
             installer.nextButtonPrefab == null ||
+            installer.winPopupPrefab == null ||
             installer.levelConfig == null)
         {
             Debug.LogError("AppInstaller: required references are not fully assigned.");
@@ -72,12 +73,14 @@ public static class RuntimeBootstrap
             .GetComponent<HomeButtonView>();
         var next = Object.Instantiate(installer.nextButtonPrefab, uiRoot.transform)
             .GetComponent<NextButtonView>();
+        var winPopup = Object.Instantiate(installer.winPopupPrefab, uiRoot.transform);
 
         var uiController = uiRoot.GetComponent<GameUIController>();
         if (uiController == null)
             uiController = uiRoot.AddComponent<GameUIController>();
 
         uiController.Initialize(levelSelect, hud, home, next);
+        uiController.RegisterWinPopup(winPopup);
 
         var statsController = uiRoot.GetComponent<GameStatsController>();
         if (statsController == null)
@@ -92,6 +95,12 @@ public static class RuntimeBootstrap
             completionController = uiRoot.AddComponent<GameCompletionController>();
 
         completionController.Initialize(board, gameController, bus);
+
+        var winPopupController = uiRoot.GetComponent<WinPopupController>();
+        if (winPopupController == null)
+            winPopupController = uiRoot.AddComponent<WinPopupController>();
+
+        winPopupController.Initialize(winPopup, uiController, bus);
 
         var session = uiRoot.GetComponent<GameSessionController>();
         if (session == null)
