@@ -67,7 +67,9 @@ public sealed class BoardController
             card.Clicked += HandleCardClicked;
             card.SetInstant(false);
             spawnedCards.Add(card);
-            models.Add(new CardModel(i, i / 2));
+            int pairId = i / 2;
+            models.Add(new CardModel(i, pairId));
+            card.SetFaceSprite(GetFaceSprite(pairId));
         }
     }
 
@@ -94,6 +96,18 @@ public sealed class BoardController
     {
         int v = Mathf.RoundToInt(value);
         return new RectOffset(v, v, v, v);
+    }
+
+    private Sprite GetFaceSprite(int pairId)
+    {
+        var sprites = settings.faceSprites;
+        if (sprites == null || sprites.Length == 0)
+            return null;
+
+        if (pairId < 0 || pairId >= sprites.Length)
+            return null;
+
+        return sprites[pairId];
     }
 
     private void HandleCardClicked(int index)

@@ -12,6 +12,9 @@ public sealed class BoardSettings : ScriptableObject
     [Min(0f)]
     public float padding = 24f;
 
+    [Header("Visuals")]
+    public Sprite[] faceSprites;
+
     [Header("Matching")]
     [Min(0f)]
     public float mismatchFlipBackDelay = 0.6f;

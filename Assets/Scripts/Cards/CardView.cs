@@ -38,6 +38,14 @@ public sealed class CardView : MonoBehaviour, IPointerClickHandler
         SetScaleX(1f);
     }
 
+    public void SetFaceSprite(Sprite sprite)
+    {
+        if (faceImage == null)
+            return;
+
+        faceImage.sprite = sprite;
+    }
+
     public void PlayFlip(bool faceUp)
     {
         if (!isAnimating && faceUp == isFaceUp)
