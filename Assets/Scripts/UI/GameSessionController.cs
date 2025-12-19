@@ -50,6 +50,7 @@ public sealed class GameSessionController : MonoBehaviour
 
     private void HandleNextRequested()
     {
+        currentDifficulty = GetNextDifficulty(currentDifficulty);
         ApplyPreset(levelConfig.GetPreset(currentDifficulty));
     }
 
@@ -68,5 +69,15 @@ public sealed class GameSessionController : MonoBehaviour
             board.Initialize(settings, cardPrefab);
         else
             board.Rebuild(settings);
+    }
+
+    private static LevelDifficulty GetNextDifficulty(LevelDifficulty current)
+    {
+        return current switch
+        {
+            LevelDifficulty.Easy => LevelDifficulty.Medium,
+            LevelDifficulty.Medium => LevelDifficulty.Hard,
+            _ => LevelDifficulty.Hard
+        };
     }
 }
