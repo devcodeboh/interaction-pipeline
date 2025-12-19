@@ -38,6 +38,7 @@ public sealed class GameSessionController : MonoBehaviour
         if (data == null || settings == null || board == null)
             return;
 
+        NormalizeCardStates(data.cardStates);
         currentDifficulty = (LevelDifficulty)data.difficulty;
         ApplyPreset(levelConfig.GetPreset(currentDifficulty), false);
         board.RestoreFromSave(
@@ -109,5 +110,17 @@ public sealed class GameSessionController : MonoBehaviour
             LevelDifficulty.Medium => LevelDifficulty.Hard,
             _ => LevelDifficulty.Hard
         };
+    }
+
+    private static void NormalizeCardStates(int[] cardStates)
+    {
+        if (cardStates == null)
+            return;
+
+        for (int i = 0; i < cardStates.Length; i++)
+        {
+            if (cardStates[i] == (int)CardState.FaceUp)
+                cardStates[i] = (int)CardState.FaceDown;
+        }
     }
 }
