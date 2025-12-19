@@ -11,7 +11,7 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
     private float matchHideDelay;
     private bool isEnabled = true;
 
-    private readonly List<int> faceUp = new();
+    private readonly List<int> revealedOrder = new();
     private readonly HashSet<int> resolving = new();
 
     public void Initialize(IReadOnlyList<CardModel> models, IReadOnlyList<CardView> views, EventBus bus, float mismatchDelay, float matchHideDelay)
@@ -53,15 +53,16 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
         if (model == null || model.State != CardState.FaceUp)
             return;
 
-        if (!faceUp.Contains(eventData.Index))
-            faceUp.Add(eventData.Index);
+        if (!revealedOrder.Contains(eventData.Index))
+            revealedOrder.Add(eventData.Index);
 
         TryResolvePairs();
     }
 
     private void TryResolvePairs()
     {
-        while (TryGetNextPair(out int first, out int second))
+        // Compare the most recently revealed pair to keep input continuous.
+        while (TryGetLastPair(out int first, out int second))
         {
             resolving.Add(first);
             resolving.Add(second);
@@ -75,16 +76,16 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
                 secondModel.SetState(CardState.Matched);
                 StartCoroutine(HideMatchedAfterDelay(first, second));
 
-                faceUp.Remove(first);
-                faceUp.Remove(second);
-                resolving.Remove(first);
-                resolving.Remove(second);
+                revealedOrder.Remove(first);
+                revealedOrder.Remove(second);
 
                 bus?.Publish(new GameEvents.CardMatchResolved(first, second, firstModel.PairId));
                 continue;
             }
 
             StartCoroutine(FlipBackAfterDelay(first, second));
+            revealedOrder.Remove(first);
+            revealedOrder.Remove(second);
         }
     }
 
@@ -96,8 +97,6 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
         FlipDownIfNeeded(first);
         FlipDownIfNeeded(second);
 
-        faceUp.Remove(first);
-        faceUp.Remove(second);
         resolving.Remove(first);
         resolving.Remove(second);
 
@@ -125,6 +124,7 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
             return;
 
         view.SetMatchedHidden(true);
+        resolving.Remove(index);
     }
 
     private void FlipDownIfNeeded(int index)
@@ -145,50 +145,39 @@ public sealed class CardMatchResolverBehaviour : MonoBehaviour
         view.PlayFlip(false);
     }
 
-    private bool TryGetNextPair(out int first, out int second)
+    private bool TryGetLastPair(out int first, out int second)
     {
         first = -1;
         second = -1;
 
-        for (int i = 0; i < faceUp.Count; i++)
+        for (int i = revealedOrder.Count - 1; i >= 0; i--)
         {
-            int index = faceUp[i];
-            if (index < 0 || index >= models.Count)
+            int index = revealedOrder[i];
+            if (!IsCandidate(index))
                 continue;
 
-            if (resolving.Contains(index))
+            if (second == -1)
+            {
+                second = index;
                 continue;
-
-            if (models[index].State != CardState.FaceUp)
-                continue;
+            }
 
             first = index;
             break;
         }
 
-        if (first == -1)
+        return first != -1 && second != -1;
+    }
+
+    private bool IsCandidate(int index)
+    {
+        if (index < 0 || index >= models.Count)
             return false;
 
-        for (int i = 0; i < faceUp.Count; i++)
-        {
-            int index = faceUp[i];
-            if (index == first)
-                continue;
+        if (resolving.Contains(index))
+            return false;
 
-            if (index < 0 || index >= models.Count)
-                continue;
-
-            if (resolving.Contains(index))
-                continue;
-
-            if (models[index].State != CardState.FaceUp)
-                continue;
-
-            second = index;
-            break;
-        }
-
-        return second != -1;
+        return models[index].State == CardState.FaceUp;
     }
 
     private void Unsubscribe()
