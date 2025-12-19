@@ -14,6 +14,9 @@ public sealed class AppInstaller : ScriptableObject
     [Header("Levels")]
     public LevelConfig levelConfig;
 
+    [Header("Audio")]
+    public AudioConfig audioConfig;
+
     [Header("Board")]
     public BoardControllerBehaviour boardRootPrefab;
     public BoardSettings boardSettings;
