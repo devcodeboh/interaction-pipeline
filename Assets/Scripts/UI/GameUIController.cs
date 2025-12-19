@@ -80,5 +80,11 @@ public sealed class GameUIController : MonoBehaviour
     private void HandleDifficultySelected(LevelDifficulty difficulty) => DifficultySelected?.Invoke(difficulty);
     private void HandlePlayRequested() => PlayRequested?.Invoke();
     private void HandleHomeRequested() => HomeRequested?.Invoke();
-    private void HandleNextRequested() => NextRequested?.Invoke();
+    private void HandleNextRequested()
+    {
+        if (winPopup != null)
+            winPopup.Hide();
+
+        NextRequested?.Invoke();
+    }
 }
