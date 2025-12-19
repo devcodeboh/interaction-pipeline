@@ -202,6 +202,18 @@ public sealed class BoardController
         return states;
     }
 
+    public int GetMatchedCount()
+    {
+        int count = 0;
+        for (int i = 0; i < models.Count; i++)
+        {
+            if (models[i].State == CardState.Matched)
+                count++;
+        }
+
+        return count;
+    }
+
     private void ApplyCardStates(int[] cardStates)
     {
         if (cardStates == null || cardStates.Length != models.Count)

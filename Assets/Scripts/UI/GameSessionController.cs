@@ -10,12 +10,13 @@ public sealed class GameSessionController : MonoBehaviour
     private GameUIController ui;
     private CardView cardPrefab;
     private GameStatsController stats;
+    private GameCompletionController completion;
 
     private LevelDifficulty currentDifficulty = DefaultDifficulty;
 
     public LevelDifficulty CurrentDifficulty => currentDifficulty;
 
-    public void Initialize(BoardControllerBehaviour board, BoardSettings settings, LevelConfig levelConfig, GameUIController ui, CardView cardPrefab, GameStatsController stats)
+    public void Initialize(BoardControllerBehaviour board, BoardSettings settings, LevelConfig levelConfig, GameUIController ui, CardView cardPrefab, GameStatsController stats, GameCompletionController completion)
     {
         this.board = board;
         this.settings = settings;
@@ -23,6 +24,7 @@ public sealed class GameSessionController : MonoBehaviour
         this.ui = ui;
         this.cardPrefab = cardPrefab;
         this.stats = stats;
+        this.completion = completion;
 
         ui.DifficultySelected += HandleDifficultySelected;
         ui.PlayRequested += HandlePlayRequested;
@@ -31,6 +33,8 @@ public sealed class GameSessionController : MonoBehaviour
 
         if (this.stats != null)
             this.stats.ResetStats();
+
+        this.completion?.ResetCompletion();
     }
 
     public void LoadFromSave(GameSaveData data)
@@ -41,6 +45,7 @@ public sealed class GameSessionController : MonoBehaviour
         NormalizeCardStates(data.cardStates);
         currentDifficulty = (LevelDifficulty)data.difficulty;
         ApplyPreset(levelConfig.GetPreset(currentDifficulty), false);
+        completion?.ResetCompletion();
         board.RestoreFromSave(
             settings,
             cardPrefab,
@@ -49,6 +54,7 @@ public sealed class GameSessionController : MonoBehaviour
             data.cardStates
         );
         stats?.SetStats(data.matches, data.turns);
+        completion?.CheckNow();
         ui.ShowHud();
     }
 
@@ -66,6 +72,7 @@ public sealed class GameSessionController : MonoBehaviour
     private void HandlePlayRequested()
     {
         stats?.ResetStats();
+        completion?.ResetCompletion();
         ApplyPreset(levelConfig.GetPreset(currentDifficulty), true);
         ui.ShowHud();
     }
@@ -79,6 +86,7 @@ public sealed class GameSessionController : MonoBehaviour
     {
         currentDifficulty = GetNextDifficulty(currentDifficulty);
         stats?.ResetStats();
+        completion?.ResetCompletion();
         ApplyPreset(levelConfig.GetPreset(currentDifficulty), true);
     }
 

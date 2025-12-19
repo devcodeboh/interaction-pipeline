@@ -67,6 +67,15 @@ public sealed class BoardControllerBehaviour : MonoBehaviour
 
     public int[] GetPairIds() => controller != null ? controller.GetPairIds() : null;
     public int[] GetCardStates() => controller != null ? controller.GetCardStates() : null;
+    public int GetMatchedCount() => controller != null ? controller.GetMatchedCount() : 0;
+    public void SetInputEnabled(bool enabled)
+    {
+        if (controller != null)
+            controller.SetInputEnabled(enabled);
+
+        if (resolver != null)
+            resolver.SetEnabled(enabled);
+    }
 
     private IEnumerator PreviewCards(float duration)
     {

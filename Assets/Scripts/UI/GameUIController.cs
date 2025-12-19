@@ -7,6 +7,7 @@ public sealed class GameUIController : MonoBehaviour
     [SerializeField] private HudView hud;
     [SerializeField] private HomeButtonView homeButton;
     [SerializeField] private NextButtonView nextButton;
+    [SerializeField] private WinPopupView winPopup;
 
     public event Action<LevelDifficulty> DifficultySelected;
     public event Action PlayRequested;
@@ -41,12 +42,24 @@ public sealed class GameUIController : MonoBehaviour
             Debug.LogWarning("GameUIController: NextButtonView is missing.");
     }
 
+    public void RegisterWinPopup(WinPopupView popup)
+    {
+        winPopup = popup;
+        if (winPopup == null)
+            return;
+
+        winPopup.Hide();
+        if (winPopup.NextButton != null)
+            winPopup.NextButton.Clicked += HandleNextRequested;
+    }
+
     public void ShowMenu()
     {
         if (levelSelect != null) levelSelect.gameObject.SetActive(true);
         if (hud != null) hud.gameObject.SetActive(false);
         if (homeButton != null) homeButton.gameObject.SetActive(false);
         if (nextButton != null) nextButton.gameObject.SetActive(false);
+        if (winPopup != null) winPopup.Hide();
     }
 
     public void ShowHud()
@@ -55,10 +68,23 @@ public sealed class GameUIController : MonoBehaviour
         if (hud != null) hud.gameObject.SetActive(true);
         if (homeButton != null) homeButton.gameObject.SetActive(true);
         if (nextButton != null) nextButton.gameObject.SetActive(true);
+        if (winPopup != null) winPopup.Hide();
+    }
+
+    public void ShowWinPopup()
+    {
+        if (winPopup != null)
+            winPopup.Show();
     }
 
     private void HandleDifficultySelected(LevelDifficulty difficulty) => DifficultySelected?.Invoke(difficulty);
     private void HandlePlayRequested() => PlayRequested?.Invoke();
     private void HandleHomeRequested() => HomeRequested?.Invoke();
-    private void HandleNextRequested() => NextRequested?.Invoke();
+    private void HandleNextRequested()
+    {
+        if (winPopup != null)
+            winPopup.Hide();
+
+        NextRequested?.Invoke();
+    }
 }
