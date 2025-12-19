@@ -9,21 +9,26 @@ public sealed class GameSessionController : MonoBehaviour
     private LevelConfig levelConfig;
     private GameUIController ui;
     private CardView cardPrefab;
+    private GameStatsController stats;
 
     private LevelDifficulty currentDifficulty = DefaultDifficulty;
 
-    public void Initialize(BoardControllerBehaviour board, BoardSettings settings, LevelConfig levelConfig, GameUIController ui, CardView cardPrefab)
+    public void Initialize(BoardControllerBehaviour board, BoardSettings settings, LevelConfig levelConfig, GameUIController ui, CardView cardPrefab, GameStatsController stats)
     {
         this.board = board;
         this.settings = settings;
         this.levelConfig = levelConfig;
         this.ui = ui;
         this.cardPrefab = cardPrefab;
+        this.stats = stats;
 
         ui.DifficultySelected += HandleDifficultySelected;
         ui.PlayRequested += HandlePlayRequested;
         ui.HomeRequested += HandleHomeRequested;
         ui.NextRequested += HandleNextRequested;
+
+        if (this.stats != null)
+            this.stats.ResetStats();
     }
 
     public void ShowMenu()
@@ -39,6 +44,7 @@ public sealed class GameSessionController : MonoBehaviour
 
     private void HandlePlayRequested()
     {
+        stats?.ResetStats();
         ApplyPreset(levelConfig.GetPreset(currentDifficulty));
         ui.ShowHud();
     }
@@ -51,6 +57,7 @@ public sealed class GameSessionController : MonoBehaviour
     private void HandleNextRequested()
     {
         currentDifficulty = GetNextDifficulty(currentDifficulty);
+        stats?.ResetStats();
         ApplyPreset(levelConfig.GetPreset(currentDifficulty));
     }
 

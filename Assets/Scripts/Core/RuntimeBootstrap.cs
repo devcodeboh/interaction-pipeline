@@ -79,11 +79,19 @@ public static class RuntimeBootstrap
 
         uiController.Initialize(levelSelect, hud, home, next);
 
+        var statsController = uiRoot.GetComponent<GameStatsController>();
+        if (statsController == null)
+            statsController = uiRoot.AddComponent<GameStatsController>();
+
+        var gameController = Object.FindFirstObjectByType<GameController>();
+        var bus = gameController != null ? gameController.Bus : null;
+        statsController.Initialize(hud, bus);
+
         var session = uiRoot.GetComponent<GameSessionController>();
         if (session == null)
             session = uiRoot.AddComponent<GameSessionController>();
 
-        session.Initialize(board, installer.boardSettings, installer.levelConfig, uiController, installer.cardPrefab);
+        session.Initialize(board, installer.boardSettings, installer.levelConfig, uiController, installer.cardPrefab, statsController);
         session.ShowMenu();
     }
 
