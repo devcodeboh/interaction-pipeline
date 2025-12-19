@@ -31,6 +31,7 @@ public sealed class BoardController
     public void BuildBoard(Vector2Int gridSize)
     {
         ClearBoard();
+        gridSize = EnsureEvenGrid(gridSize);
         ConfigureGrid(gridSize);
         SpawnCards(gridSize);
         inputController = new CardInputController(models, spawnedCards, bus);
@@ -74,14 +75,9 @@ public sealed class BoardController
             card.SetInstant(false);
             spawnedCards.Add(card);
             int pairId = pairIds[i];
-            var model = new CardModel(i, pairId);
-            if (pairId < 0)
-                model.SetState(CardState.Matched);
-            models.Add(model);
+            models.Add(new CardModel(i, pairId));
             card.SetBackSprite(settings.backSprite);
             card.SetFaceSprite(GetFaceSprite(pairId));
-            if (pairId < 0)
-                card.SetMatchedHidden(true);
         }
     }
 
@@ -112,9 +108,6 @@ public sealed class BoardController
 
     private Sprite GetFaceSprite(int pairId)
     {
-        if (pairId < 0)
-            return null;
-
         var sprites = settings.faceSprites;
         if (sprites == null || sprites.Length == 0)
             return null;
@@ -123,6 +116,23 @@ public sealed class BoardController
             return null;
 
         return sprites[pairId];
+    }
+
+    private static Vector2Int EnsureEvenGrid(Vector2Int gridSize)
+    {
+        int columns = Mathf.Max(1, gridSize.x);
+        int rows = Mathf.Max(1, gridSize.y);
+        int count = columns * rows;
+        if (count % 2 == 0)
+            return new Vector2Int(columns, rows);
+
+        if (columns <= rows)
+            columns += 1;
+        else
+            rows += 1;
+
+        Debug.LogWarning($"Board size {gridSize.x}x{gridSize.y} is odd. Auto-adjusted to {columns}x{rows}.");
+        return new Vector2Int(columns, rows);
     }
 
     private static List<int> BuildPairIds(int count)
@@ -135,19 +145,15 @@ public sealed class BoardController
             ids.Add(i);
         }
 
-        if (count % 2 != 0)
-            ids.Add(-1);
-
         Shuffle(ids);
         return ids;
     }
 
     private static void Shuffle(List<int> list)
     {
-        var rng = new System.Random();
         for (int i = list.Count - 1; i > 0; i--)
         {
-            int swap = rng.Next(i + 1);
+            int swap = UnityEngine.Random.Range(0, i + 1);
             (list[i], list[swap]) = (list[swap], list[i]);
         }
     }
