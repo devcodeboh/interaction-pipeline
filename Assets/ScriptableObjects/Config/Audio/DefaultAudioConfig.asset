@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38c927aff7c040c480e17aab2a383633, type: 3}
   m_Name: DefaultAudioConfig
   m_EditorClassIdentifier: 
-  flip: {fileID: 0}
-  match: {fileID: 0}
-  mismatch: {fileID: 0}
-  gameCompleted: {fileID: 0}
-  music: {fileID: 0}
+  flip: {fileID: 8300000, guid: b09bfb867e402704ca0e758a0c91b684, type: 3}
+  match: {fileID: 8300000, guid: 4a7d17c2582c27144ac27a7d3267c12a, type: 3}
+  mismatch: {fileID: 8300000, guid: da559e1ea9c1aeb40b63154f1bedeaec, type: 3}
+  gameCompleted: {fileID: 8300000, guid: 3037c249efab7f645a55210d8ddf8109, type: 3}
+  music: {fileID: 8300000, guid: a697e130ecf78eb47bb5e801546740b5, type: 3}

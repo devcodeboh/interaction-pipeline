@@ -17,6 +17,7 @@ MonoBehaviour:
   hudPrefab: {fileID: 4407271650371238988, guid: 57b25dfdf1dffec4e9615845f390fc7d, type: 3}
   homeButtonPrefab: {fileID: 2328990335968690038, guid: 311a804f324bd094da79a37e93dfae33, type: 3}
   nextButtonPrefab: {fileID: 3626167917855271296, guid: 26446eea0620a0947bac16871d96f6f6, type: 3}
+  winPopupPrefab: {fileID: 7095025079138803653, guid: 7316f724a3d2f3c44b2107b0867a41c8, type: 3}
   levelConfig: {fileID: 11400000, guid: df96e35a40624ba0a878f88c60474f2c, type: 2}
   audioConfig: {fileID: 11400000, guid: 11f5f89a810847d9a5ea92707d1c9a2c, type: 2}
   boardRootPrefab: {fileID: 8019867520931000146, guid: 339abdca46506f34991b3a00990ccae4, type: 3}
