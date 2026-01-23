@@ -35,6 +35,7 @@ public sealed class GameSessionController : MonoBehaviour
             this.stats.ResetStats();
 
         this.completion?.ResetCompletion();
+        ui?.ShowMenu();
     }
 
     public void LoadFromSave(GameSaveData data)

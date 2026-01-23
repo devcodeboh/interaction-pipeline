@@ -122,13 +122,13 @@ public static class RuntimeBootstrap
             statsController,
             completionController
         );
-        session.ShowMenu();
 
         var saveController = uiRoot.GetComponent<GameSaveController>();
         if (saveController == null)
             saveController = uiRoot.AddComponent<GameSaveController>();
 
         saveController.Initialize(board, session, statsController, bus);
+        session.ShowMenu();
     }
 
     private static void EnsureEventSystem(Transform parent)
